@@ -1,20 +1,19 @@
-FROM python:3
-USER root
+FROM python:3.10-slim
 
-RUN apt-get update
-RUN apt-get -y install locales && \
-    localedef -f UTF-8 -i ja_JP ja_JP.UTF-8
 ENV LANG ja_JP.UTF-8
 ENV LANGUAGE ja_JP:ja
 ENV LC_ALL ja_JP.UTF-8
 ENV TZ JST-9
 ENV TERM xterm
 
-RUN apt-get install -y vim less
-RUN pip install --upgrade pip
-RUN pip install --upgrade setuptools
+RUN apt-get update &&\
+    apt-get install -y wget gnupg curl
+WORKDIR /chromium-driver
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - &&\
+    wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb &&\
+    apt-get install -y ./google-chrome-stable_current_amd64.deb &&\
+    rm google-chrome-stable_current_amd64.deb
 
-RUN python -m pip install jupyterlab
-WORKDIR /var/docker-python
-
-COPY requirements.txt /var/docker-python
+RUN pip install --upgrade pip &&\
+    pip install poetry &&\
+    poetry config virtualenvs.create false
